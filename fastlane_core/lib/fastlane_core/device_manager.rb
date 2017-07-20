@@ -31,10 +31,19 @@ module FastlaneCore
           else
             # iPad 2 (0EDE6AFC-3767-425A-9658-AAA30A60F212) (Shutdown)
             # iPad Air 2 (4F3B8059-03FD-4D72-99C0-6E9BBEE2A9CE) (Shutdown) (unavailable, device type profile not found)
-            if line.include?("inch)")
-              # For Xcode 8, where sometimes we have the # of inches in ()
-              # iPad Pro (12.9 inch) (CEF11EB3-79DF-43CB-896A-0F33916C8BDE) (Shutdown)
+
+            # For Xcode 8, where sometimes we have the # of inches in ()
+            # or disambiguation of device generation in ()
+            # or both
+            # iPad Pro (12.9 inch) (CEF11EB3-79DF-43CB-896A-0F33916C8BDE) (Shutdown)
+            # iPad (5th generation) (237980CA-7894-4607-AD96-99C1110BC21E) (Shutdown)
+            # iPad Pro (12.9-inch) (2nd generation) (F98BCFD2-F1BC-4D35-8CFB-EA20E43BCD32) (Shutdown)
+            if line.include?("inch)") and line.include?("generation)")
+              match = line.match(/\s+([^\(]+ \(.*inch\) \(.*generation\)) \(([-0-9A-F]+)\) \(([^\(]+)\)(.*unavailable.*)?/)
+            elsif line.include?("inch)")
               match = line.match(/\s+([^\(]+ \(.*inch\)) \(([-0-9A-F]+)\) \(([^\(]+)\)(.*unavailable.*)?/)
+            elsif line.include?("generation)")
+              match = line.match(/\s+([^\(]+ \(.*generation\)) \(([-0-9A-F]+)\) \(([^\(]+)\)(.*unavailable.*)?/)
             else
               match = line.match(/\s+([^\(]+) \(([-0-9A-F]+)\) \(([^\(]+)\)(.*unavailable.*)?/)
             end
