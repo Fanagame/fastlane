@@ -76,23 +76,35 @@ describe FastlaneCore do
         expect(Open3).to receive(:popen3).with("xcrun simctl list devices").and_yield(nil, response, nil, nil)
 
         devices = FastlaneCore::Simulator.all
-        expect(devices.count).to eq(12)
+        expect(devices.count).to eq(14)
 
-        expect(devices[-3]).to have_attributes(
+        expect(devices[-7]).to have_attributes(
+          name: "iPad (5th generation)", os_type: "iOS", os_version: "10.0",
+          udid: "237980CA-7894-4607-AD96-99C1110BC21E",
+          state: "Shutdown",
+          is_simulator: true
+        )
+        expect(devices[-4]).to have_attributes(
           name: "iPad Air 2", os_type: "iOS", os_version: "10.0",
           udid: "0FDEB396-0582-438A-B09E-8F8F889DB632",
           state: "Shutdown",
           is_simulator: true
         )
-        expect(devices[-2]).to have_attributes(
+        expect(devices[-3]).to have_attributes(
           name: "iPad Pro (9.7-inch)", os_type: "iOS", os_version: "10.0",
           udid: "C03658EC-1362-4D8D-A40A-45B1D7D5405E",
           state: "Shutdown",
           is_simulator: true
         )
-        expect(devices[-1]).to have_attributes(
+        expect(devices[-2]).to have_attributes(
           name: "iPad Pro (12.9-inch)", os_type: "iOS", os_version: "10.0",
           udid: "CEF11EB3-79DF-43CB-896A-0F33916C8BDE",
+          state: "Shutdown",
+          is_simulator: true
+        )
+        expect(devices[-1]).to have_attributes(
+          name: "iPad Pro (12.9-inch) (2nd generation)", os_type: "iOS", os_version: "10.0",
+          udid: "F98BCFD2-F1BC-4D35-8CFB-EA20E43BCD32",
           state: "Shutdown",
           is_simulator: true
         )
