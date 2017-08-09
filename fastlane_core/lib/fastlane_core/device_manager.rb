@@ -29,27 +29,37 @@ module FastlaneCore
           if line =~ /^-- /
             (os_type, os_version) = line.gsub(/-- (.*) --/, '\1').split
           else
+
+            # Typical inputs include:
             # iPad 2 (0EDE6AFC-3767-425A-9658-AAA30A60F212) (Shutdown)
             # iPad Air 2 (4F3B8059-03FD-4D72-99C0-6E9BBEE2A9CE) (Shutdown) (unavailable, device type profile not found)
-
-            # For Xcode 8, where sometimes we have the # of inches in ()
-            # or disambiguation of device generation in ()
-            # or both
             # iPad Pro (12.9 inch) (CEF11EB3-79DF-43CB-896A-0F33916C8BDE) (Shutdown)
-            # iPad (5th generation) (237980CA-7894-4607-AD96-99C1110BC21E) (Shutdown)
-            # iPad Pro (12.9-inch) (2nd generation) (F98BCFD2-F1BC-4D35-8CFB-EA20E43BCD32) (Shutdown)
-            if line.include?("inch)") and line.include?("generation)")
-              match = line.match(/\s+([^\(]+ \(.*inch\) \(.*generation\)) \(([-0-9A-F]+)\) \(([^\(]+)\)(.*unavailable.*)?/)
-            elsif line.include?("inch)")
-              match = line.match(/\s+([^\(]+ \(.*inch\)) \(([-0-9A-F]+)\) \(([^\(]+)\)(.*unavailable.*)?/)
-            elsif line.include?("generation)")
-              match = line.match(/\s+([^\(]+ \(.*generation\)) \(([-0-9A-F]+)\) \(([^\(]+)\)(.*unavailable.*)?/)
-            else
-              match = line.match(/\s+([^\(]+) \(([-0-9A-F]+)\) \(([^\(]+)\)(.*unavailable.*)?/)
-            end
 
+            # First regex, to find and extract:
+            # 1: Device UUID
+            # 2: Device state
+            # 3: Device availability (optional)
+            # The device name will be extracted as a 2nd step
+            match = line.match(/\s+([^\(]+) \(([-0-9A-F]+)\) \(([^\(]+)\)(.*unavailable.*)?/)
+
+            # An unavailable device will be ignored entirely for parsing
             if match && !match[4] && (os_type == requested_os_type || requested_os_type == "")
-              @devices << Device.new(name: match[1], os_type: os_type, os_version: os_version, udid: match[2], state: match[3], is_simulator: true)
+
+              device_uuid = match[2]
+              device_state = match[3]
+
+              # Split the line string using the device_uuid that we already extracted
+              # ie: "XXXX (DEVICE_UUID) YYYY" => extract XXXX
+              line_split_by_device_uuid = line.split("(#{device_uuid})")
+              if line_split_by_device_uuid.length != 2
+                return
+              end
+
+              # First item of the array should contain the name of the device
+              # Although, that string might have extra whitespaces
+              device_name = line_split_by_device_uuid[0].strip
+
+              @devices << Device.new(name: device_name, os_type: os_type, os_version: os_version, udid: device_uuid, state: device_state, is_simulator: true)
             end
           end
         end
